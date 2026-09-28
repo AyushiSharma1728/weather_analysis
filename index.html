@@ -1,0 +1,369 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Weather App</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+        }
+
+        .container {
+            width: 400px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: white;
+            margin-bottom: 25px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #locationInput {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            outline: none;
+            font-size: 16px;
+        }
+
+        #searchBtn {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 10px;
+            background: #222;
+            color: white;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        #searchBtn:hover {
+            background: #444;
+        }
+
+        #error {
+            color: white;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .weather-card {
+            display: none;
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        #city {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        #date {
+            color: #777;
+            margin-bottom: 10px;
+        }
+
+        #weatherIcon {
+            width: 100px;
+        }
+
+        #temperature {
+            font-size: 50px;
+            margin: 5px 0;
+        }
+
+        #description {
+            text-transform: capitalize;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .weather-info {
+            display: flex;
+            gap: 10px;
+        }
+
+        .info-box {
+            flex: 1;
+            background: #f2f6ff;
+            padding: 15px 5px;
+            border-radius: 12px;
+        }
+
+        .info-box span {
+            font-size: 22px;
+        }
+
+        .info-box p {
+            font-size: 12px;
+            color: #777;
+            margin: 5px 0;
+        }
+
+        .info-box strong {
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>🌤️ Weather App</h1>
+
+        <p class="subtitle">
+            Enter a city to check today's weather
+        </p>
+
+        <div class="search-box">
+
+            <input
+                type="text"
+                id="locationInput"
+                placeholder="Enter city name"
+            >
+
+            <button id="searchBtn">
+                Search
+            </button>
+
+        </div>
+
+        <p id="error"></p>
+
+        <div class="weather-card" id="weatherCard">
+
+            <h2 id="city"></h2>
+
+            <p id="date"></p>
+
+            <img id="weatherIcon" alt="Weather icon">
+
+            <h3 id="temperature"></h3>
+
+            <p id="description"></p>
+
+            <div class="weather-info">
+
+                <div class="info-box">
+                    <span>🌡️</span>
+                    <p>Feels Like</p>
+                    <strong id="feelsLike"></strong>
+                </div>
+
+                <div class="info-box">
+                    <span>💧</span>
+                    <p>Humidity</p>
+                    <strong id="humidity"></strong>
+                </div>
+
+                <div class="info-box">
+                    <span>💨</span>
+                    <p>Wind</p>
+                    <strong id="wind"></strong>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        // Your OpenWeather API key
+        const API_KEY = "c137a2f7f7a10ffa5141b157748ffc5b";
+
+
+        // Get button
+        const searchBtn = document.getElementById("searchBtn");
+
+
+        // Get input
+        const locationInput = document.getElementById("locationInput");
+
+
+        // Search button click
+        searchBtn.addEventListener("click", getWeather);
+
+
+        // Press Enter to search
+        locationInput.addEventListener("keydown", function(event) {
+
+            if (event.key === "Enter") {
+                getWeather();
+            }
+
+        });
+
+
+        // Weather function
+        async function getWeather() {
+
+            const city = locationInput.value.trim();
+
+            const error = document.getElementById("error");
+
+            const weatherCard =
+                document.getElementById("weatherCard");
+
+
+            // Empty input
+            if (city === "") {
+
+                error.textContent =
+                    "Please enter a city name.";
+
+                weatherCard.style.display = "none";
+
+                return;
+            }
+
+
+            error.textContent = "Loading...";
+
+
+            try {
+
+                const url =
+                    "https://api.openweathermap.org/data/2.5/weather?q="
+                    + encodeURIComponent(city)
+                    + "&appid="
+                    + API_KEY
+                    + "&units=metric";
+
+
+                console.log("API URL:", url);
+
+
+                const response = await fetch(url);
+
+
+                const data = await response.json();
+
+
+                console.log("Weather data:", data);
+
+
+                // Check API response
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.message || "Unable to get weather"
+                    );
+
+                }
+
+
+                // Show card
+                weatherCard.style.display = "block";
+
+                error.textContent = "";
+
+
+                // City
+                document.getElementById("city").textContent =
+                    data.name + ", " + data.sys.country;
+
+
+                // Date
+                const today = new Date();
+
+                document.getElementById("date").textContent =
+                    today.toLocaleDateString("en-IN", {
+                        weekday: "long",
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric"
+                    });
+
+
+                // Temperature
+                document.getElementById("temperature").textContent =
+                    Math.round(data.main.temp) + "°C";
+
+
+                // Feels like
+                document.getElementById("feelsLike").textContent =
+                    Math.round(data.main.feels_like) + "°C";
+
+
+                // Humidity
+                document.getElementById("humidity").textContent =
+                    data.main.humidity + "%";
+
+
+                // Wind
+                document.getElementById("wind").textContent =
+                    data.wind.speed + " m/s";
+
+
+                // Weather description
+                document.getElementById("description").textContent =
+                    data.weather[0].description;
+
+
+                // Weather icon
+                const icon =
+                    data.weather[0].icon;
+
+
+                document.getElementById("weatherIcon").src =
+                    "https://openweathermap.org/img/wn/"
+                    + icon
+                    + "@2x.png";
+
+
+            }
+
+            catch (error) {
+
+                console.error(error);
+
+                weatherCard.style.display = "none";
+
+                error.textContent =
+                    "❌ " + error.message;
+
+            }
+
+        }
+
+    </script>
+
+</body>
+
+</html>
+```
